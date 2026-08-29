@@ -5,6 +5,7 @@ import { grantDemoAccess, goToDemo } from '@/lib/demoAccess';
 
 export default function WaitlistSection() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -16,7 +17,7 @@ export default function WaitlistSection() {
     setIsSubmitting(true);
     setError('');
     try {
-      await grantDemoAccess(email);
+      await grantDemoAccess(email, name);
       setSubmitted(true);
       try {
         confetti({
@@ -58,30 +59,36 @@ export default function WaitlistSection() {
         {/* Waitlist Box */}
         <div className="bg-[#111111] border border-neutral-800 rounded-3xl p-6 sm:p-10 shadow-2xl mt-6">
           {!submitted ? (
-            <form
-              name="waitlist"
-              method="POST"
-              data-netlify="true"
-              data-netlify-honeypot="bot-field"
-              onSubmit={handleJoin}
-              className="space-y-4 max-w-md mx-auto"
-            >
-              <input type="hidden" name="form-name" value="waitlist" />
-              <p className="hidden">
-                <label>
-                  Don’t fill this out <input name="bot-field" />
-                </label>
+            <form name="contact" method="POST" data-netlify="true" onSubmit={handleJoin} className="space-y-4 max-w-md mx-auto">
+              <input type="hidden" name="form-name" value="contact" />
+              <p>
+                <label className="sr-only" htmlFor="waitlist-name">Name</label>
+                <input
+                  id="waitlist-name"
+                  type="text"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Name"
+                  required
+                  autoComplete="name"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-4 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#c1ff72] text-base"
+                />
               </p>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                autoComplete="email"
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-4 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#c1ff72] text-base"
-              />
+              <p>
+                <label className="sr-only" htmlFor="waitlist-email">Email</label>
+                <input
+                  id="waitlist-email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  required
+                  autoComplete="email"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-4 text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#c1ff72] text-base"
+                />
+              </p>
 
               {error ? <p className="text-sm text-red-400">{error}</p> : null}
 
@@ -97,7 +104,7 @@ export default function WaitlistSection() {
 
               <div className="flex items-center justify-center gap-2 text-xs text-neutral-400">
                 <ShieldCheck className="w-4 h-4 text-[#c1ff72]" />
-                <span>Enter your email to open the interactive demo.</span>
+                <span>Enter your name and email to open the interactive demo.</span>
               </div>
             </form>
           ) : (

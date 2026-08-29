@@ -7,6 +7,7 @@ import { grantDemoAccess, goToDemo } from '@/lib/demoAccess';
 export default function HeroSection() {
   const [activeNode, setActiveNode] = useState<string | null>('euro');
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [joined, setJoined] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -18,7 +19,7 @@ export default function HeroSection() {
     setBusy(true);
     setError('');
     try {
-      await grantDemoAccess(email);
+      await grantDemoAccess(email, name);
       setJoined(true);
       try {
         confetti({
@@ -101,40 +102,45 @@ export default function HeroSection() {
         {/* Email gate for the live demo */}
         <div className="pt-2 px-4 sm:px-0 max-w-[540px] mx-auto">
           {!joined ? (
-            <form
-              name="waitlist"
-              method="POST"
-              data-netlify="true"
-              data-netlify-honeypot="bot-field"
-              onSubmit={handleJoin}
-              className="flex flex-col sm:flex-row items-stretch gap-2.5"
-            >
-              <input type="hidden" name="form-name" value="waitlist" />
-              <p className="hidden">
-                <label>
-                  Don’t fill this out <input name="bot-field" />
-                </label>
+            <form name="contact" method="POST" data-netlify="true" onSubmit={handleJoin} className="space-y-2.5">
+              <input type="hidden" name="form-name" value="contact" />
+              <p>
+                <label className="sr-only" htmlFor="hero-name">Name</label>
+                <input
+                  id="hero-name"
+                  type="text"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Name"
+                  required
+                  autoComplete="name"
+                  className="w-full bg-white border border-[#d4d4d4] rounded-xl px-4 py-3.5 sm:py-4 text-base text-black placeholder:text-neutral-500 shadow-sm focus:outline-none focus:border-black focus:ring-2 focus:ring-[#c1ff72] transition-all"
+                />
               </p>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                autoComplete="email"
-                aria-label="Email address"
-                className="flex-1 min-w-0 bg-white border border-[#d4d4d4] rounded-xl px-4 py-3.5 sm:py-4 text-base text-black placeholder:text-neutral-500 shadow-sm focus:outline-none focus:border-black focus:ring-2 focus:ring-[#c1ff72] transition-all"
-              />
-              <button
-                id="hero-try-live-btn"
-                type="submit"
-                disabled={busy}
-                className="shrink-0 bg-[#000000] text-[#c1ff72] font-bold text-base px-6 py-3.5 sm:py-4 rounded-xl hover:bg-[#1a1a1a] active:scale-95 transition-all shadow-lg shadow-black/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
-              >
-                <span>{busy ? 'Unlocking…' : 'Try it live'}</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
+              <p className="flex flex-col sm:flex-row items-stretch gap-2.5">
+                <label className="sr-only" htmlFor="hero-email">Email</label>
+                <input
+                  id="hero-email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  required
+                  autoComplete="email"
+                  className="flex-1 min-w-0 bg-white border border-[#d4d4d4] rounded-xl px-4 py-3.5 sm:py-4 text-base text-black placeholder:text-neutral-500 shadow-sm focus:outline-none focus:border-black focus:ring-2 focus:ring-[#c1ff72] transition-all"
+                />
+                <button
+                  id="hero-try-live-btn"
+                  type="submit"
+                  disabled={busy}
+                  className="shrink-0 bg-[#000000] text-[#c1ff72] font-bold text-base px-6 py-3.5 sm:py-4 rounded-xl hover:bg-[#1a1a1a] active:scale-95 transition-all shadow-lg shadow-black/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                >
+                  <span>{busy ? 'Unlocking…' : 'Try it live'}</span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </p>
             </form>
           ) : (
             <div className="flex items-center justify-center gap-2.5 bg-[#c1ff72]/25 border border-[#c1ff72] rounded-xl px-4 py-3.5 sm:py-4 text-sm font-semibold text-black">

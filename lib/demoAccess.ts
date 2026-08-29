@@ -1,7 +1,7 @@
 export const DEMO_PATH = "/app";
 export const ACCESS_COOKIE = "knodle_demo_access";
 export const EMAIL_STORAGE_KEY = "knodle_demo_email";
-export const NETLIFY_FORM_NAME = "waitlist";
+export const NETLIFY_FORM_NAME = "contact";
 
 export function storedDemoEmail() {
   if (typeof window === "undefined") return "";
@@ -13,10 +13,11 @@ export function hasLocalDemoAccess() {
   return Boolean(window.localStorage.getItem(EMAIL_STORAGE_KEY));
 }
 
-/** POST to Netlify Forms so submissions show up in the project Forms tab. */
-async function submitNetlifyWaitlist(email: string) {
+/** POST to the Netlify `contact` form (name + email). */
+async function submitNetlifyContact(name: string, email: string) {
   const body = new URLSearchParams();
   body.set("form-name", NETLIFY_FORM_NAME);
+  body.set("name", name);
   body.set("email", email);
 
   await fetch("/__forms.html", {
@@ -26,8 +27,9 @@ async function submitNetlifyWaitlist(email: string) {
   });
 }
 
-export async function grantDemoAccess(email: string) {
+export async function grantDemoAccess(email: string, name = "") {
   const trimmed = email.trim().toLowerCase();
+  const displayName = name.trim() || trimmed.split("@")[0] || "there";
   if (!trimmed.includes("@")) {
     throw new Error("Enter a valid email");
   }
@@ -37,18 +39,17 @@ export async function grantDemoAccess(email: string) {
   const access = await fetch("/api/access", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: trimmed }),
+    body: JSON.stringify({ email: trimmed, name: displayName }),
   });
 
   if (!access.ok) {
     throw new Error("Could not unlock the demo");
   }
 
-  // Best-effort: store the email in Netlify Forms. Local Next.js has no handler.
   try {
-    await submitNetlifyWaitlist(trimmed);
+    await submitNetlifyContact(displayName, trimmed);
   } catch {
-    // ignore
+    // Local Next.js has no Netlify form handler.
   }
 }
 
@@ -56,7 +57,7 @@ export function goToDemo() {
   window.location.assign(DEMO_PATH);
 }
 
-export async function unlockAndGoToDemo(email: string) {
-  await grantDemoAccess(email);
+export async function unlockAndGoToDemo(email: string, name = "") {
+  await grantDemoAccess(email, name);
   goToDemo();
 }

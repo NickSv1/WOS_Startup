@@ -11,6 +11,7 @@ interface WaitlistModalProps {
 
 export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +25,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
     setBusy(true);
     setError('');
     try {
-      await grantDemoAccess(email);
+      await grantDemoAccess(email, name);
       setSubmitted(true);
       try {
         confetti({
@@ -68,31 +69,37 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
               </p>
             </div>
 
-            <form
-              name="waitlist"
-              method="POST"
-              data-netlify="true"
-              data-netlify-honeypot="bot-field"
-              onSubmit={handleSubmit}
-              className="space-y-3"
-            >
-              <input type="hidden" name="form-name" value="waitlist" />
-              <p className="hidden">
-                <label>
-                  Don’t fill this out <input name="bot-field" />
-                </label>
+            <form name="contact" method="POST" data-netlify="true" onSubmit={handleSubmit} className="space-y-3">
+              <input type="hidden" name="form-name" value="contact" />
+              <p>
+                <label className="sr-only" htmlFor="modal-name">Name</label>
+                <input
+                  id="modal-name"
+                  type="text"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Name"
+                  required
+                  autoFocus
+                  autoComplete="name"
+                  className="w-full bg-[#000000] border border-[#333333] rounded-xl px-4 py-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#c1ff72]"
+                />
               </p>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                required
-                autoFocus
-                autoComplete="email"
-                className="w-full bg-[#000000] border border-[#333333] rounded-xl px-4 py-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#c1ff72]"
-              />
+              <p>
+                <label className="sr-only" htmlFor="modal-email">Email</label>
+                <input
+                  id="modal-email"
+                  type="email"
+                  name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  required
+                  autoComplete="email"
+                  className="w-full bg-[#000000] border border-[#333333] rounded-xl px-4 py-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#c1ff72]"
+                />
+              </p>
 
               {error ? <p className="text-sm text-red-400">{error}</p> : null}
 

@@ -2,17 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Knodle waitlist</title>
+    <title>Knodle contact</title>
   </head>
   <body>
-    <!-- Static HTML so Netlify can detect this form at deploy time. -->
-    <form name="waitlist" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" netlify>
-      <input type="hidden" name="form-name" value="waitlist" />
-      <p hidden>
-        <label>Don’t fill this out <input name="bot-field" /></label>
+    <form name="contact" netlify>
+      <p>
+        <label>Name <input type="text" name="name" /></label>
       </p>
-      <label>Email <input type="email" name="email" /></label>
-      <button type="submit">Send</button>
+      <p>
+        <label>Email <input type="email" name="email" /></label>
+      </p>
+      <p>
+        <button type="submit">Send</button>
+      </p>
     </form>
   </body>
 </html>
