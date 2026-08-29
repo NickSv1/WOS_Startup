@@ -1,0 +1,7 @@
+{
+  "name": "Knodle - The AI-Powered Savings Coach",
+  "description": "The AI-powered savings coach that keeps you on track without the boring spreadsheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
