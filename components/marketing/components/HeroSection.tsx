@@ -101,9 +101,23 @@ export default function HeroSection() {
         {/* Email gate for the live demo */}
         <div className="pt-2 px-4 sm:px-0 max-w-[540px] mx-auto">
           {!joined ? (
-            <form onSubmit={handleJoin} className="flex flex-col sm:flex-row items-stretch gap-2.5">
+            <form
+              name="waitlist"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              onSubmit={handleJoin}
+              className="flex flex-col sm:flex-row items-stretch gap-2.5"
+            >
+              <input type="hidden" name="form-name" value="waitlist" />
+              <p className="hidden">
+                <label>
+                  Don’t fill this out <input name="bot-field" />
+                </label>
+              </p>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"

@@ -58,9 +58,23 @@ export default function WaitlistSection() {
         {/* Waitlist Box */}
         <div className="bg-[#111111] border border-neutral-800 rounded-3xl p-6 sm:p-10 shadow-2xl mt-6">
           {!submitted ? (
-            <form onSubmit={handleJoin} className="space-y-4 max-w-md mx-auto">
+            <form
+              name="waitlist"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              onSubmit={handleJoin}
+              className="space-y-4 max-w-md mx-auto"
+            >
+              <input type="hidden" name="form-name" value="waitlist" />
+              <p className="hidden">
+                <label>
+                  Don’t fill this out <input name="bot-field" />
+                </label>
+              </p>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"

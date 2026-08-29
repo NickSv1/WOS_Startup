@@ -68,9 +68,23 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form
+              name="waitlist"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              onSubmit={handleSubmit}
+              className="space-y-3"
+            >
+              <input type="hidden" name="form-name" value="waitlist" />
+              <p className="hidden">
+                <label>
+                  Don’t fill this out <input name="bot-field" />
+                </label>
+              </p>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"

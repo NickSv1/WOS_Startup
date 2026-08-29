@@ -22,7 +22,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={spaceGrotesk.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <form
+          name="waitlist"
+          method="POST"
+          data-netlify="true"
+          data-netlify-honeypot="bot-field"
+          hidden
+        >
+          <input type="hidden" name="form-name" value="waitlist" />
+          <input type="text" name="bot-field" />
+          <input type="email" name="email" />
+        </form>
+        {children}
+      </body>
     </html>
   );
 }
