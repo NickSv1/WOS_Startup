@@ -34,6 +34,48 @@ export interface Goal {
   description?: string;
   /** Cumulative discretionary overspend since the plan started. Pushes the finish out. */
   discretionaryOverspend?: number;
+  /** Set when the goal is already paid for — shown as DONE on the map. */
+  completedAt?: string;
+  /** Extra $/week unlocked by switching to cheaper habits. */
+  weeklyBoost?: number;
+  /** Spend-switch ids already turned on for this goal. */
+  appliedSwitchIds?: string[];
+  /** Pledges that keep a swap honest against the next bank tap. */
+  swapPledges?: SwapPledge[];
+  /** The specific blow-out that put this goal off track. */
+  slip?: {
+    date: string;
+    label: string;
+    amount: number;
+  };
+}
+
+export type SwapPledgeStatus = "pledged" | "kept" | "broken";
+
+export interface SwapPledge {
+  switchId: string;
+  status: SwapPledgeStatus;
+  pledgedAt: string;
+}
+
+/** Swap a recurring spend for a cheaper option spotted on the bank feed. */
+export interface SpendSwitch {
+  id: string;
+  emoji: string;
+  habit: string;
+  fromMerchant: string;
+  fromPrice: number;
+  fromDomain: string;
+  toMerchant: string;
+  toPrice: number;
+  toDomain: string;
+  timesPerWeek: number;
+  partner?: string;
+  categoryId: string;
+  /** Short note tying the swap to a real-looking bank line. */
+  sourceNote?: string;
+  /** Partner code shown after the user reveals the coupon. */
+  couponCode?: string;
 }
 
 export interface DemoUser {

@@ -26,9 +26,9 @@ export function SimulateModal({
         className="w-full max-w-sm animate-fade-up rounded-2xl bg-white p-6 shadow-node"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold">Stephan overspent</h2>
+        <h2 className="text-xl font-bold">Hayley overspent</h2>
         <p className="mt-1 text-sm text-neutral-500">
-          Log a blow-out. The path to the surfboard gets longer — then Knodle tells you what to cut.
+          Log a blow-out. The path gets longer — then Knodle shows cheaper swaps to keep the date.
         </p>
 
         <div className="mt-5 grid grid-cols-2 gap-2.5">

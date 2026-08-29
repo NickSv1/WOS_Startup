@@ -1,5 +1,5 @@
 import type { Goal } from "./types";
-import { projectGoal } from "./savings";
+import { isCompleted, projectGoal } from "./savings";
 
 const MAX_BEADS = 8;
 
@@ -7,12 +7,11 @@ export function orderedGoals(goals: Goal[]): Goal[] {
   return [...goals].sort((a, b) => +new Date(a.deadline) - +new Date(b.deadline));
 }
 
-/** Weeks of saving still required at this weekly pace, plus any overspend slip. */
-export function weeksForGoal(goal: Goal, weeklySavable: number): number {
-  const remaining = Math.max(0, goal.target - goal.saved);
-  const pace = Math.max(1, Math.round(weeklySavable));
-  const base = Math.max(1, Math.ceil(remaining / pace));
-  return base + Math.max(0, projectGoal(goal).extraWeeks);
+/** Weeks until finish: plan to the deadline, plus any overspend slip. */
+export function weeksForGoal(goal: Goal, _weeklySavable = 0): number {
+  if (isCompleted(goal)) return 0;
+  const p = projectGoal(goal);
+  return Math.max(1, p.weeksPlanned + p.extraWeeks);
 }
 
 export function suggestedDeadline(remaining: number, weeklySavable: number): string {
@@ -30,18 +29,63 @@ export interface PathBead {
   cumulative: number;
   weeksCovered: number;
   goal?: Goal;
+  /** True when this bead is the extra week(s) the slip added. */
+  slip?: boolean;
 }
 
-function compressWeeks(weeks: number, goalId: string): { id: string; weeksCovered: number; label: string }[] {
+export function weekBeadsForGoal(
+  goal: Goal,
+  _weeklySavable: number,
+  maxBeads = MAX_BEADS,
+): PathBead[] {
+  if (isCompleted(goal)) return [];
+  const remaining = Math.max(0, goal.target - goal.saved);
+  if (remaining <= 0) return [];
+  const p = projectGoal(goal);
+  const planned = Math.max(1, p.weeksPlanned);
+  const extra = Math.max(0, p.extraWeeks);
+  const weeks = planned + extra;
+  const chunks = compressWeeks(weeks, goal.id, maxBeads);
+  const perWeek = remaining / Math.max(1, weeks);
+  let running = goal.saved;
+  let weekNo = 0;
+  const slipFrom = chunks.length - extra;
+  return chunks.map((chunk, i) => {
+    weekNo += chunk.weeksCovered;
+    running = Math.min(goal.target, goal.saved + perWeek * weekNo);
+    const slip = extra > 0 && i >= Math.max(0, slipFrom);
+    return {
+      id: chunk.id,
+      kind: "week" as const,
+      label: slip
+        ? extra === 1
+          ? "+1w"
+          : `+${weekNo - planned}w`
+        : chunk.weeksCovered === 1
+          ? `W${weekNo}`
+          : `W${weekNo - chunk.weeksCovered + 1}–${weekNo}`,
+      sub: slip ? "late" : `week ${weekNo}`,
+      cumulative: Math.round(running),
+      weeksCovered: chunk.weeksCovered,
+      slip,
+    };
+  });
+}
+
+function compressWeeks(
+  weeks: number,
+  goalId: string,
+  maxBeads = MAX_BEADS,
+): { id: string; weeksCovered: number; label: string }[] {
   const n = Math.max(1, weeks);
-  if (n <= MAX_BEADS) {
+  if (n <= maxBeads) {
     return Array.from({ length: n }, (_, i) => ({
       id: `week-${goalId}-${i + 1}`,
       weeksCovered: 1,
       label: `W${i + 1}`,
     }));
   }
-  const size = Math.ceil(n / MAX_BEADS);
+  const size = Math.ceil(n / maxBeads);
   const beads: { id: string; weeksCovered: number; label: string }[] = [];
   let covered = 0;
   let i = 0;
@@ -68,7 +112,8 @@ export function buildGoalPath(
   allGoals: Goal[],
   weeklySavable: number,
 ): PathBead[] {
-  const ordered = orderedGoals(allGoals);
+  const live = allGoals.filter((g) => !isCompleted(g) || g.id === selected.id);
+  const ordered = orderedGoals(live);
   const idx = ordered.findIndex((g) => g.id === selected.id);
   const sequence = idx >= 0 ? ordered.slice(0, idx + 1) : [selected];
 
@@ -79,8 +124,22 @@ export function buildGoalPath(
   let weekNo = 0;
 
   for (const g of sequence) {
-    const weeks = weeksForGoal(g, weeklySavable);
     const remaining = Math.max(0, g.target - g.saved);
+
+    if (isCompleted(g) || remaining <= 0) {
+      beads.push({
+        id: g.id,
+        kind: g.id === selected.id ? "goal" : "milestone",
+        label: g.name,
+        sub: g.emoji,
+        cumulative: g.target,
+        weeksCovered: 0,
+        goal: g,
+      });
+      continue;
+    }
+
+    const weeks = weeksForGoal(g, weeklySavable);
     const chunks = compressWeeks(weeks, g.id);
     const perWeek = remaining / Math.max(1, weeks);
     let running = g.saved;

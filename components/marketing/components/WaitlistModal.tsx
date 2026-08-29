@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import confetti from 'canvas-confetti';
-import { X, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, ArrowRight, ShieldCheck, Check } from 'lucide-react';
 import KnodleLogo from './KnodleLogo';
 import { grantDemoAccess, goToDemo } from '@/lib/demoAccess';
 
@@ -11,7 +11,6 @@ interface WaitlistModalProps {
 
 export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -25,7 +24,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
     setBusy(true);
     setError('');
     try {
-      await grantDemoAccess(email, name);
+      await grantDemoAccess(email);
       setSubmitted(true);
       try {
         confetti({
@@ -37,9 +36,9 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
       } catch {
         // ignore
       }
-      window.setTimeout(() => goToDemo(), 700);
+      window.setTimeout(() => goToDemo(), 2400);
     } catch {
-      setError('Could not unlock the demo. Please try again.');
+      setError('Could not join the waitlist. Please try again.');
       setBusy(false);
     }
   };
@@ -62,30 +61,15 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
             <div className="mb-5">
               <KnodleLogo variant="light" className="mb-3" />
               <h3 className="text-2xl font-bold tracking-tight text-white">
-                Try Knodle live
+                Join the waitlist
               </h3>
               <p className="text-sm text-neutral-400 mt-1">
-                Enter your email to unlock the interactive demo.
+                Drop your email. You&apos;ll be on the list and in the live demo in one step.
               </p>
             </div>
 
             <form name="contact" method="POST" data-netlify="true" onSubmit={handleSubmit} className="space-y-3">
               <input type="hidden" name="form-name" value="contact" />
-              <p>
-                <label className="sr-only" htmlFor="modal-name">Name</label>
-                <input
-                  id="modal-name"
-                  type="text"
-                  name="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Name"
-                  required
-                  autoFocus
-                  autoComplete="name"
-                  className="w-full bg-[#000000] border border-[#333333] rounded-xl px-4 py-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#c1ff72]"
-                />
-              </p>
               <p>
                 <label className="sr-only" htmlFor="modal-email">Email</label>
                 <input
@@ -94,8 +78,9 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
+                  placeholder="you@email.com"
                   required
+                  autoFocus
                   autoComplete="email"
                   className="w-full bg-[#000000] border border-[#333333] rounded-xl px-4 py-3.5 text-base text-white placeholder:text-neutral-500 focus:outline-none focus:border-[#c1ff72]"
                 />
@@ -108,7 +93,7 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                 disabled={busy}
                 className="w-full bg-[#c1ff72] text-black font-bold py-3.5 rounded-xl hover:bg-[#b0f55c] active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md text-base disabled:opacity-70"
               >
-                <span>{busy ? 'Unlocking…' : 'Open the demo'}</span>
+                <span>{busy ? 'Joining…' : 'Join the waitlist'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -122,8 +107,13 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
           </div>
         ) : (
           <div className="text-center py-8 space-y-3">
-            <h3 className="text-2xl font-bold text-[#c1ff72]">You&apos;re in</h3>
-            <p className="text-sm text-neutral-300">Opening the live demo…</p>
+            <div className="w-14 h-14 rounded-full bg-[#c1ff72] text-black flex items-center justify-center mx-auto">
+              <Check className="w-8 h-8 stroke-[3]" />
+            </div>
+            <h3 className="text-2xl font-bold text-[#c1ff72]">You&apos;re on the waitlist</h3>
+            <p className="text-sm text-neutral-300">
+              We&apos;ve got {email}. Opening the live demo…
+            </p>
           </div>
         )}
       </div>

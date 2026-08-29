@@ -39,3 +39,7 @@ export function relativeDate(iso: string): string {
   if (days < 7) return `${days}d ago`;
   return d.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
 }
+
+export function shortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+}

@@ -13,11 +13,10 @@ export function hasLocalDemoAccess() {
   return Boolean(window.localStorage.getItem(EMAIL_STORAGE_KEY));
 }
 
-/** POST to the Netlify `contact` form (name + email). */
-async function submitNetlifyContact(name: string, email: string) {
+/** POST to the Netlify `contact` form (email). */
+async function submitNetlifyContact(email: string) {
   const body = new URLSearchParams();
   body.set("form-name", NETLIFY_FORM_NAME);
-  body.set("name", name);
   body.set("email", email);
 
   await fetch("/__forms.html", {
@@ -47,7 +46,7 @@ export async function grantDemoAccess(email: string, name = "") {
   }
 
   try {
-    await submitNetlifyContact(displayName, trimmed);
+    await submitNetlifyContact(trimmed);
   } catch {
     // Local Next.js has no Netlify form handler.
   }

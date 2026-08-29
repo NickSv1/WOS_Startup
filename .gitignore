@@ -2,6 +2,7 @@
 node_modules
 /.next
 /out
+/exports
 /build
 .DS_Store
 *.pem

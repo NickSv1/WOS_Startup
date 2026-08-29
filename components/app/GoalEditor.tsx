@@ -6,7 +6,7 @@ import { suggestedDeadline } from "@/lib/path";
 import { money } from "@/lib/format";
 import type { Goal } from "@/lib/types";
 
-const EMOJIS = ["🏄", "🎯", "✈️", "🏠", "💻", "💍", "🚗", "🎓"];
+const EMOJIS = ["🏄", "🚐", "🎿", "🤿", "🎟️", "🎯", "✈️", "🏠", "💻"];
 
 export function GoalEditor({
   mode = "edit",
@@ -42,6 +42,11 @@ export function GoalEditor({
     savedThisWeek: goal?.savedThisWeek ?? 0,
     emoji,
     discretionaryOverspend: goal?.discretionaryOverspend ?? 0,
+    completedAt: goal?.completedAt,
+    weeklyBoost: goal?.weeklyBoost,
+    appliedSwitchIds: goal?.appliedSwitchIds,
+    swapPledges: goal?.swapPledges,
+    slip: goal?.slip,
   };
   const preview = goalStatus(draft);
   const engineWeeks = Math.max(

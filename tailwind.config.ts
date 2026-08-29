@@ -42,6 +42,10 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "slide-up": {
+          "0%": { opacity: "0", transform: "translateY(80px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
         "pulse-ring": {
           "0%": { boxShadow: "0 0 0 0 rgba(193,255,114,0.7)" },
           "100%": { boxShadow: "0 0 0 14px rgba(193,255,114,0)" },
@@ -50,6 +54,7 @@ const config: Config = {
       animation: {
         buzz: "buzz 0.6s ease-in-out",
         "fade-up": "fade-up 0.35s ease-out both",
+        "slide-up": "slide-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both",
         "pulse-ring": "pulse-ring 1.4s ease-out infinite",
       },
     },

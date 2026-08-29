@@ -49,7 +49,7 @@ export default function Footer({ onOpenInfo, onOpenWaitlist }: FooterProps) {
             onClick={onOpenWaitlist}
             className="text-[#c1ff72] font-bold hover:underline cursor-pointer"
           >
-            Try it live
+            Join the waitlist
           </button>
         </div>
       </div>

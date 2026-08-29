@@ -136,3 +136,22 @@ body {
 .node-enter {
   animation: node-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes slip-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 122, 61, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 122, 61, 0.45);
+  }
+}
+
+@keyframes week-cut {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.15); opacity: 0; }
+}
+
+.week-cut {
+  animation: week-cut 0.7s cubic-bezier(0.4, 0, 1, 1) forwards;
+}

@@ -1,4 +1,4 @@
-import type { Goal, SpendCategory } from "./types";
+import type { Goal, SpendCategory, SpendSwitch, SwapPledge } from "./types";
 
 /**
  * The savings engine is deterministic TypeScript. These numbers are the ONLY
@@ -15,13 +15,98 @@ export interface GoalStatus {
   pctComplete: number;
 }
 
+export function isCompleted(g: Goal): boolean {
+  return Boolean(g.completedAt) || g.saved >= g.target;
+}
+
+export function weeklySavingFromSwitch(sw: SpendSwitch): number {
+  return Math.round(Math.max(0, sw.fromPrice - sw.toPrice) * sw.timesPerWeek);
+}
+
+export function percentOff(sw: SpendSwitch): number {
+  if (sw.fromPrice <= 0) return 0;
+  return Math.round((1 - sw.toPrice / sw.fromPrice) * 100);
+}
+
+export function applySpendSwitch(g: Goal, sw: SpendSwitch): Goal {
+  if (g.appliedSwitchIds?.includes(sw.id)) return g;
+  const now = new Date().toISOString();
+  const pledges = (g.swapPledges ?? []).filter((p) => p.switchId !== sw.id);
+  return {
+    ...g,
+    weeklyBoost: (g.weeklyBoost ?? 0) + weeklySavingFromSwitch(sw),
+    appliedSwitchIds: [...(g.appliedSwitchIds ?? []), sw.id],
+    swapPledges: [...pledges, { switchId: sw.id, status: "pledged", pledgedAt: now }],
+  };
+}
+
+export function revertSpendSwitch(g: Goal, sw: SpendSwitch): Goal {
+  if (!g.appliedSwitchIds?.includes(sw.id)) return g;
+  return {
+    ...g,
+    weeklyBoost: Math.max(0, (g.weeklyBoost ?? 0) - weeklySavingFromSwitch(sw)),
+    appliedSwitchIds: (g.appliedSwitchIds ?? []).filter((id) => id !== sw.id),
+    swapPledges: (g.swapPledges ?? []).map((p) =>
+      p.switchId === sw.id ? { ...p, status: "broken" as const } : p,
+    ),
+  };
+}
+
+export function markPledgeKept(g: Goal, switchId: string): Goal {
+  return {
+    ...g,
+    swapPledges: (g.swapPledges ?? []).map((p) =>
+      p.switchId === switchId ? { ...p, status: "kept" as const } : p,
+    ),
+  };
+}
+
+export function activePledge(g: Goal, switchId: string): SwapPledge | undefined {
+  return g.swapPledges?.find((p) => p.switchId === switchId && p.status !== "broken");
+}
+
+export interface SwitchPreview {
+  before: Projection;
+  after: Projection;
+  weeklySave: number;
+  percentOff: number;
+  restores: boolean;
+  weeksSaved: number;
+}
+
+/** Before/after finish if this swap is locked in — used for proof, not the live goal. */
+export function previewSpendSwitch(g: Goal, sw: SpendSwitch): SwitchPreview {
+  const before = projectGoal(g);
+  const after = projectGoal(applySpendSwitch(g, sw));
+  return {
+    before,
+    after,
+    weeklySave: weeklySavingFromSwitch(sw),
+    percentOff: percentOff(sw),
+    restores: after.onTrack && (!before.onTrack || after.projectedWeeks <= before.projectedWeeks),
+    weeksSaved: Math.max(0, before.projectedWeeks - after.projectedWeeks),
+  };
+}
+
+/** Whether this swap brings the finish back to (or before) the original deadline. */
+export function switchRestoresDate(g: Goal, sw: SpendSwitch): boolean {
+  return previewSpendSwitch(g, sw).after.onTrack;
+}
+
+export type GoalBadge = "done" | "on-track" | "off-track";
+
+export function goalBadge(g: Goal): GoalBadge {
+  if (isCompleted(g)) return "done";
+  return projectGoal(g).onTrack ? "on-track" : "off-track";
+}
+
 export function goalStatus(g: Goal): GoalStatus {
   const weeksLeft = Math.max(
     1,
     Math.ceil((+new Date(g.deadline) - Date.now()) / MS_PER_WEEK),
   );
   const remaining = Math.max(0, g.target - g.saved);
-  const weeklyTarget = Math.ceil(remaining / weeksLeft);
+  const weeklyTarget = remaining <= 0 ? 0 : Math.ceil(remaining / weeksLeft);
   const pctComplete = Math.min(100, Math.round((g.saved / g.target) * 100));
   return { weeksLeft, remaining, weeklyTarget, pctComplete };
 }
@@ -68,10 +153,25 @@ export interface Projection {
 }
 
 export function projectGoal(g: Goal): Projection {
+  if (isCompleted(g)) {
+    return {
+      weeksPlanned: 0,
+      requiredWeekly: 0,
+      overspend: 0,
+      extraWeeks: 0,
+      projectedWeeks: 0,
+      projectedDate: g.completedAt ?? g.deadline,
+      onTrack: true,
+    };
+  }
+
   const { weeksLeft, weeklyTarget } = goalStatus(g);
   const overspend = Math.max(0, g.discretionaryOverspend ?? 0);
-  // Every `requiredWeekly` of overspend is one week you have to make back.
-  const extraWeeks = Math.round(overspend / weeklyTarget);
+  const boost = Math.max(0, g.weeklyBoost ?? 0);
+  // Boost is extra saved each remaining week — it eats the slip without moving the date.
+  const netOverspend = Math.max(0, overspend - boost * weeksLeft);
+  const extraWeeks =
+    weeklyTarget <= 0 ? 0 : Math.round(netOverspend / weeklyTarget);
   const projectedWeeks = weeksLeft + extraWeeks;
   const projectedDate = new Date(Date.now() + projectedWeeks * MS_PER_WEEK).toISOString();
   return {

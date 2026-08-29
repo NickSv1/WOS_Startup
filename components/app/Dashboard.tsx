@@ -3,7 +3,7 @@
 import { LogoMark } from "@/components/Logo";
 import { ACCOUNT_META } from "@/lib/constants";
 import { money } from "@/lib/format";
-import { goalStatus, projectGoal } from "@/lib/savings";
+import { goalBadge, goalStatus, projectGoal } from "@/lib/savings";
 import type { Account, Goal } from "@/lib/types";
 
 export type DashKey = "map" | "goals" | "nudges" | "settings";
@@ -26,6 +26,7 @@ export function Dashboard({
   onNav,
   onSelect,
   onAddGoal,
+  onToggleComplete,
 }: {
   userName: string;
   accounts: Account[];
@@ -37,6 +38,7 @@ export function Dashboard({
   onNav: (key: DashKey) => void;
   onSelect: (id: string) => void;
   onAddGoal: () => void;
+  onToggleComplete: (id: string) => void;
 }) {
   return (
     <aside className="flex h-full w-[272px] shrink-0 flex-col border-r border-neutral-200 bg-white">
@@ -77,37 +79,72 @@ export function Dashboard({
           Goals
         </SectionLabel>
         <div className="space-y-1">
-          {goals.map((g) => {
+          {[...goals]
+            .sort((a, b) => Number(goalBadge(a) === "done") - Number(goalBadge(b) === "done"))
+            .map((g) => {
             const on = selectedId === g.id;
             const s = goalStatus(g);
             const p = projectGoal(g);
+            const badge = goalBadge(g);
             return (
-              <button
+              <div
                 key={g.id}
-                onClick={() => onSelect(g.id)}
-                className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
-                  on ? "border-black bg-lime/20" : "border-neutral-200 hover:border-neutral-300"
+                className={`flex w-full items-start gap-2 rounded-xl border px-2.5 py-2.5 transition ${
+                  on
+                    ? badge === "off-track"
+                      ? "border-[#ff7a3d] bg-[#ff7a3d]/10"
+                      : "border-black bg-lime/20"
+                    : badge === "off-track"
+                      ? "border-[#ff7a3d]/50 hover:border-[#ff7a3d]"
+                      : "border-neutral-200 hover:border-neutral-300"
                 }`}
               >
+                <button
+                  type="button"
+                  aria-label={badge === "done" ? `Mark ${g.name} as not done` : `Mark ${g.name} as done`}
+                  onClick={() => onToggleComplete(g.id)}
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold transition ${
+                    badge === "done"
+                      ? "border-black bg-lime text-black"
+                      : "border-neutral-300 bg-white text-transparent hover:border-black"
+                  }`}
+                >
+                  ✓
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelect(g.id)}
+                  className="min-w-0 flex-1 text-left"
+                >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-[13px] font-semibold">
+                  <span className={`truncate text-[13px] font-semibold ${badge === "done" ? "text-neutral-400 line-through" : ""}`}>
                     {g.emoji} {g.name}
                   </span>
                   <span
                     className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
-                      p.onTrack ? "bg-black text-lime" : "bg-black text-white"
+                      badge === "done"
+                        ? "bg-lime text-black"
+                        : badge === "on-track"
+                          ? "bg-black text-lime"
+                          : "bg-[#ff7a3d] text-black"
                     }`}
                   >
-                    {p.onTrack ? "ON TRACK" : `+${p.extraWeeks}W`}
+                    {badge === "done" ? "DONE" : badge === "on-track" ? "ON TRACK" : "FIX"}
                   </span>
                 </div>
                 <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-100">
-                  <div className="h-full rounded-full bg-lime" style={{ width: `${s.pctComplete}%` }} />
+                  <div
+                    className={`h-full rounded-full ${badge === "off-track" ? "bg-[#ff7a3d]" : "bg-lime"}`}
+                    style={{ width: `${s.pctComplete}%` }}
+                  />
                 </div>
                 <div className="tabular mt-1 text-[11px] text-neutral-500">
-                  {money(g.saved)} / {money(g.target)}
+                  {badge === "done"
+                    ? "Paid in full"
+                    : `${money(g.saved)} / ${money(g.target)}${p.onTrack ? "" : ` · +${p.extraWeeks}w`}`}
                 </div>
-              </button>
+                </button>
+              </div>
             );
           })}
         </div>
