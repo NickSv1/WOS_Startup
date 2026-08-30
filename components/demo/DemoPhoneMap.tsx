@@ -37,11 +37,10 @@ export function DemoPhoneMap() {
         </svg>
 
         <div
-          className="absolute z-10 flex h-[88px] w-[88px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-neutral-200 bg-white text-center shadow-node"
+          className="absolute z-10 flex h-[64px] w-[64px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-neutral-200 bg-white text-center"
           style={{ left: "28%", top: "28%" }}
         >
           <span className="text-base">💳</span>
-          <span className="text-[10px] font-semibold">Everyday</span>
           <span className="tabular text-[11px] font-bold">$642</span>
         </div>
 
@@ -55,14 +54,21 @@ export function DemoPhoneMap() {
         </div>
 
         <div
-          className="absolute z-20 flex h-[108px] w-[108px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-[3px] border-[#ff7a3d] bg-black px-2 text-center text-white shadow-node"
+          className="absolute z-20 w-[132px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border-2 border-[#ff7a3d] bg-white p-2 text-left shadow-node"
           style={{ left: "72%", top: "70%" }}
         >
-          <span className="text-base">🏙️</span>
-          <span className="text-[10px] font-semibold">Sydney Trip</span>
-          <span className="mt-1 rounded-full bg-[#ff7a3d] px-1.5 py-0.5 text-[8px] font-bold text-black">FIX</span>
-          <span className="tabular mt-0.5 text-[12px] font-bold text-lime">$650</span>
-          <span className="tabular text-[9px] text-neutral-400">16w</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">🏙️</span>
+            <span className="rounded-full bg-[#ff7a3d] px-1.5 py-0.5 text-[8px] font-bold text-black">FIX</span>
+          </div>
+          <div className="mt-1 text-[11px] font-bold leading-tight">Sydney Trip</div>
+          <div className="mt-0.5 flex items-baseline justify-between">
+            <span className="tabular text-[12px] font-bold">$650</span>
+            <span className="tabular text-[9px] font-semibold text-neutral-500">16w</span>
+          </div>
+          <div className="mt-1 h-1 overflow-hidden rounded-full bg-neutral-100">
+            <div className="h-full w-[17%] rounded-full bg-[#ff7a3d]" />
+          </div>
         </div>
       </div>
     </div>

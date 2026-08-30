@@ -20,7 +20,8 @@ const BASE = process.env.DEMO_URL ?? "http://localhost:3000";
 const RECORD_URL = `${BASE}/demo/record`;
 const WIDTH = 1920;
 const HEIGHT = 1080;
-const TIMEOUT_MS = 120_000;
+const TIMEOUT_MS = 180_000;
+const TARGET_S = 40;
 const HIDE_OVERLAY_CSS = `
   nextjs-portal,
   [data-next-badge-root],
@@ -112,7 +113,7 @@ async function main() {
     window.dispatchEvent(new Event("knodle-record-start"));
   });
   await page.waitForSelector("[data-demo-complete='true']", { timeout: TIMEOUT_MS });
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(350);
   const tEnd = Date.now();
 
   const video = page.video();
@@ -135,33 +136,41 @@ async function main() {
 
   const destMp4 = join(OUT_DIR, "knodle-product-tour.mp4");
   const ss = Math.max(0, (tStart - tPage) / 1000 - 0.12);
-  const duration = (tEnd - tStart) / 1000 + 0.35;
+  const contentS = Math.max(0.1, (tEnd - tStart) / 1000 + 0.12);
   const bin = ffmpegBin();
+  const args = ["-y", "-ss", ss.toFixed(3), "-i", destWebm];
+  if (contentS > TARGET_S + 0.25) {
+    const rate = TARGET_S / contentS;
+    args.push("-filter:v", `setpts=${rate.toFixed(6)}*PTS,fps=30`);
+  } else if (contentS < TARGET_S - 0.2) {
+    const pad = (TARGET_S - contentS).toFixed(3);
+    args.push("-filter:v", `fps=30,tpad=stop_mode=clone:stop_duration=${pad}`);
+  } else {
+    args.push("-filter:v", "fps=30", "-t", String(TARGET_S));
+  }
+  args.push(
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "18",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "-an",
+    destMp4,
+  );
   try {
-    await run(bin, [
-      "-y",
-      "-ss",
-      ss.toFixed(2),
-      "-t",
-      duration.toFixed(2),
-      "-i",
-      destWebm,
-      "-c:v",
-      "libx264",
-      "-pix_fmt",
-      "yuv420p",
-      "-movflags",
-      "+faststart",
-      "-an",
-      destMp4,
-    ]);
+    await run(bin, args);
     try {
       unlinkSync(destWebm);
     } catch {
       /* keep webm if unlink fails */
     }
     console.log(`Wrote ${destMp4}`);
-    console.log(`Duration ~${duration.toFixed(1)}s`);
+    console.log(`Recorded ~${contentS.toFixed(1)}s → ${TARGET_S.toFixed(1)}s MP4`);
   } catch {
     console.log(`Could not encode MP4 with ${bin} — wrote ${destWebm}`);
     console.log("Install ffmpeg for MP4:  brew install ffmpeg");

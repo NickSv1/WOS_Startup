@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={spaceGrotesk.variable}>
       <body className="font-sans antialiased">
-        <form name="contact" hidden {...{ netlify: true }}>
+        <form name="contact" method="POST" hidden data-netlify="true">
           <p>
             <label>
               Name <input type="text" name="name" />

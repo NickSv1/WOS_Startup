@@ -6,6 +6,7 @@ import { GoalEditor } from "./GoalEditor";
 import { SimulateModal } from "./SimulateModal";
 import { PhoneNudge, type NudgeState } from "./PhoneNudge";
 import { GoalFixPanel } from "./GoalFixPanel";
+import { AccountTxnsPanel } from "./AccountTxnsPanel";
 import { Dashboard, type DashKey } from "./Dashboard";
 import { SettingsPanel } from "./SettingsPanel";
 import { LogoMark } from "@/components/Logo";
@@ -173,10 +174,15 @@ export function AppShell() {
 
   function applySwitch(sw: SpendSwitch) {
     if (!selectedGoal) return;
-    patchGoal(selectedGoal.id, (g) => applySpendSwitch(g, sw));
+    patchGoal(selectedGoal.id, (g) => ({
+      ...applySpendSwitch(g, sw),
+      discretionaryOverspend: 0,
+      slip: undefined,
+    }));
     setSpend(null);
     setPreviewSwitchId(null);
     setCouponRevealed(false);
+    setHideFix(true);
     setReorgSignal((n) => n + 1);
   }
 
@@ -251,10 +257,11 @@ export function AppShell() {
   }
 
   const projection = selectedGoal ? projectGoal(selectedGoal) : null;
+  const selectedAccount = accounts.find((a) => a.id === selectedId) ?? null;
   const showFix = Boolean(
     selectedGoal && !isCompleted(selectedGoal) && !hideFix && fixReady,
   );
-  const showAlert = Boolean(!selectedGoal && atRisk && !alertDismissed);
+  const showAlert = Boolean(!selectedGoal && !selectedAccount && atRisk && !alertDismissed);
 
   function selectNode(id: string) {
     setSelectedId(id);
@@ -379,6 +386,10 @@ export function AppShell() {
             previewGoal={previewGoal}
           />
         )}
+
+        {selectedAccount ? (
+          <AccountTxnsPanel account={selectedAccount} onClose={() => setSelectedId("you")} />
+        ) : null}
 
         {selectedGoal && (
           <div className="pointer-events-none absolute left-1/2 top-4 z-20 w-[min(520px,calc(100%-24px))] -translate-x-1/2">

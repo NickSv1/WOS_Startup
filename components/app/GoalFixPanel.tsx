@@ -21,9 +21,9 @@ export function GoalFixPanel({
   switches,
   options,
   previewId,
-  couponRevealed,
+  couponRevealed: _couponRevealed,
   onPreview,
-  onRevealCoupon,
+  onRevealCoupon: _onRevealCoupon,
   onSwitch,
   onKeep,
   onBreak,
@@ -173,50 +173,24 @@ export function GoalFixPanel({
 
           {preview && proof ? (
             <div className="mt-3 rounded-2xl border border-black bg-black px-3.5 py-3 text-white">
-              {!couponRevealed ? (
-                <>
-                  <p className="text-sm font-semibold leading-snug">
-                    {preview.toMerchant} has a code for this swap. Reveal it and we&apos;ll drop
-                    the extra week.
-                  </p>
-                  <p className="mt-1 text-[11px] text-white/55">
-                    {preview.sourceNote ?? preview.habit}
-                  </p>
-                  <button
-                    id={preview.id === "switch-coffee" ? "swap-coffee-apply" : undefined}
-                    onClick={onRevealCoupon}
-                    className="mt-2.5 w-full rounded-xl bg-lime py-2.5 text-sm font-bold text-black transition hover:brightness-95"
-                  >
-                    Reveal coupon code
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-lime">
-                    Your code
-                  </p>
-                  <p className="mt-1 font-mono text-2xl font-bold tracking-[0.18em]">
-                    {preview.couponCode ?? "SWAP20"}
-                  </p>
-                  <p className="mt-1 text-[11px] text-white/55">
-                    Show this at {preview.toMerchant}. The extra week is off — {goal.name} is back
-                    on track.
-                  </p>
-                  <button
-                    id={preview.id === "switch-coffee" ? "swap-coffee-apply" : undefined}
-                    onClick={() => onSwitch(preview)}
-                    className="mt-2.5 w-full rounded-xl bg-lime py-2.5 text-sm font-bold text-black transition hover:brightness-95"
-                  >
-                    {proof.after.onTrack
-                      ? `Commit — hit ${shortDate(goal.deadline)}`
-                      : `Commit — save ${money(proof.weeklySave)}/wk`}
-                  </button>
-                </>
-              )}
+              <p className="text-sm font-semibold leading-snug">
+                Swap {preview.fromMerchant} → {preview.toMerchant} and {goal.name} lands back on{" "}
+                {shortDate(goal.deadline)}.
+              </p>
+              <p className="mt-1 text-[11px] text-white/55">
+                {preview.sourceNote ?? preview.habit} · +{money(proof.weeklySave)}/wk
+              </p>
+              <button
+                id={preview.id === "switch-coffee" ? "swap-coffee-apply" : "swap-fix-apply"}
+                onClick={() => onSwitch(preview)}
+                className="mt-2.5 w-full rounded-xl bg-lime py-2.5 text-sm font-bold text-black transition hover:brightness-95"
+              >
+                Done — back on track
+              </button>
             </div>
           ) : offTrack && !preview ? (
             <p className="mt-2.5 text-center text-[11px] text-neutral-500">
-              Tap a swap to see the finish date move. Reveal the coupon to cut the extra week.
+              Tap a swap, then Done — the date comes back.
             </p>
           ) : null}
 
